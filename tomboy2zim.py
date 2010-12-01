@@ -146,7 +146,7 @@ class NoteBuilder:
 
         if last_tag == 'title':
             # fix some characters not allowed for path name
-            self.note.name = self.fix_link(data.strip())
+            self.note.name = self.fix_link_all(data.strip())
 
         elif last_tag == 'create-date':
             # remove the time zone info.
@@ -158,9 +158,12 @@ class NoteBuilder:
                 self.mtime_done = True
 
         elif last_tag == 'link:internal':
-            self.text_stack.append(self.fix_link(data.strip()))
-            self.text_stack.append('|')
-            self.text_stack.append(data.strip())
+            link = data.strip()
+            fixed_link = self.fix_link(link)
+            self.text_stack.append(fixed_link)
+            if link != fixed_link:
+                self.text_stack.append('|')
+                self.text_stack.append(link)
 
         elif 'note-content' in self.tag_stack:
             if self.title_done:
@@ -177,9 +180,12 @@ class NoteBuilder:
     def fix_link(self, s):
         s = s.replace(':', ';')
         s = s.replace('/', '-')
-        s = s.replace(' ', '_')
         return s
 
+    def fix_link_all(self, s):
+        s = self.fix_link(s)
+        s = s.replace(' ', '_')
+        return s
 
 def debug():
     print '-' * 80
